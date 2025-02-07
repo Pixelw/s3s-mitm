@@ -3,6 +3,21 @@ import subprocess
 from datetime import datetime
 
 import mitmproxy.http
+import mitmproxy.proxy.layers.tls
+
+
+class IgnoreTLS:
+    def __init__(self) -> None:
+        pass
+
+    def tls_clienthello(self, data: mitmproxy.proxy.layers.tls.ClientHelloData):
+        if data.context.server.address is None:
+            data.ignore_connection = True
+            return
+        print(data.context.server.address)
+        if "api.lp1.av5ja.srv.nintendo.net" not in data.context.server.address[0]:
+            data.ignore_connection = True
+            return
 
 
 class Trigger:
@@ -37,11 +52,13 @@ class Trigger:
                 json.dump(config, w, indent=4, ensure_ascii=False)
 
             # trigger s3s -r
+            print("[i] triggering s3s -r")
             subprocess.run(["python", "s3s.py", "-r"])
         except Exception as e:
             print(f"[E] parse bulletToken failed: {e}")
 
 
 addons = [
-    Trigger()
+    Trigger(),
+    IgnoreTLS()
 ]
