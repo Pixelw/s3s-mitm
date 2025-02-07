@@ -6,7 +6,8 @@ s3s-mitm
 mitmweb -s nso-trigger.py -m upstream:http://127.0.0.1:7890  --web-host 192.168.145.255 -p 8888
 ```
 请先设置代理为mitmproxy, 然后去 http://mitm.it 安装根证书, 详细见mitm的说明
-(WIP) 一键运行脚本
+
+#### (WIP) 一键运行脚本
 
 s3s 🦑
 =====
