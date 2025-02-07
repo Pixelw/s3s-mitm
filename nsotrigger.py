@@ -5,8 +5,10 @@ from datetime import datetime
 import mitmproxy.http
 import mitmproxy.proxy.layers.tls
 
+s3s_running = False
 
-class IgnoreTLS:
+
+class IgnoreOther:
     def __init__(self) -> None:
         pass
 
@@ -21,10 +23,18 @@ class IgnoreTLS:
 
 
 class Trigger:
+
+    def __init__(self, show_only=False):
+        self.show_only = show_only
+
     def response(self, flow: mitmproxy.http.HTTPFlow):
         if "api.lp1.av5ja.srv.nintendo.net/api/bullet_tokens" not in flow.request.url:
             return
         print("[i] url hit!")
+        global s3s_running
+        if s3s_running:
+            print("[w] s3s is still running")
+            return
         try:
             if flow.request.cookies.get("_gtoken") is None:
                 return
@@ -33,13 +43,13 @@ class Trigger:
             if gtoken is None or len(gtoken) == 0:
                 return
 
-            print(f"[i] gtoken found!, {gtoken[:10]}...")
+            print(f"[i] gtoken found!: {gtoken}")
             json_data = json.loads(flow.response.get_text())
             if "bulletToken" not in json_data:
                 return
 
             bullet_token = json_data["bulletToken"]
-            print(f"[i] bullet token found!, {bullet_token[:10]}...")
+            print(f"[i] bullet token found!: {bullet_token}")
             with open("config.txt", "r", encoding="utf-8") as f:
                 config = json.load(f)
 
@@ -51,14 +61,19 @@ class Trigger:
             with open("config.txt", "w", encoding="utf-8") as w:
                 json.dump(config, w, indent=4, ensure_ascii=False)
 
+            if self.show_only:
+                return
             # trigger s3s -r
             print("[i] triggering s3s -r")
+            s3s_running = True
             subprocess.run(["python", "s3s.py", "-r"])
         except Exception as e:
             print(f"[E] parse bulletToken failed: {e}")
+        finally:
+            s3s_running = False
 
 
 addons = [
     Trigger(),
-    IgnoreTLS()
+    IgnoreOther()
 ]
