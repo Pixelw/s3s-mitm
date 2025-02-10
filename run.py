@@ -9,6 +9,7 @@ import nsotrigger
 
 async def start_mitmproxy(port: int, upstream_proxy: str, show_only=False):
     if len(upstream_proxy) != 0:
+        print(f"upstream proxy set to {upstream_proxy}")
         options = Options(listen_host="0.0.0.0", listen_port=port, mode=[f"upstream:{upstream_proxy}"])
     else:
         options = Options(listen_host="0.0.0.0", listen_port=port)
@@ -24,10 +25,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Automatically get token when you open splt3 app, then trigger s3s upload.")
     parser.add_argument("-k", "--si-key", type=str, help="API key for stat.ink, needed for first run")
-    parser.add_argument("-c", "--conf", type=str, help="Configuration INI file, override settings below when set")
-    parser.add_argument("-p", "--port", type=int, help="Port of proxy, for phone connection")
-    parser.add_argument("-u", "--upstream", type=str, help="Upstream proxy, like http://127.0.0.1:8080")
-    parser.add_argument("-s", "--show-only", action="store_true", help="Show tokens only instead of running s3s")
+    parser.add_argument("-c", "--conf", type=str, help="Configuration INI file, override settings when set")
+    parser.add_argument("-p", "--port", type=int, help="Port of proxy, for phone connection, default 8888")
+    parser.add_argument("-u", "--upstream", type=str, help="Upstream proxy, like http://127.0.0.1:8080, default none")
+    parser.add_argument("-s", "--show-only", action="store_true",
+                        help="Show tokens only instead of running s3s, default false")
     args = parser.parse_args()
 
     _port = 8888
@@ -49,4 +51,5 @@ if __name__ == "__main__":
     if args.conf:  # todo parse config
         pass
 
+    print(f"start mitmproxy at 0.0.0.0:{_port}")
     asyncio.run(start_mitmproxy(_port, _u_proxy, args.show_only))
