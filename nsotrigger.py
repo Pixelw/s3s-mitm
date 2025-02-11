@@ -1,9 +1,12 @@
 import json
-import subprocess
+import sys
+import threading
 from datetime import datetime
 
 import mitmproxy.http
 import mitmproxy.proxy.layers.tls
+
+import s3s
 
 s3s_running = False
 
@@ -66,7 +69,9 @@ class Trigger:
             # trigger s3s -r
             print("[i] triggering s3s -r")
             s3s_running = True
-            subprocess.run(["python", "s3s.py", "-r"])
+            sys.argv = ["s3s.py", "-r"]
+            thread = threading.Thread(target=s3s.main)
+            thread.start()
         except Exception as e:
             print(f"[E] parse bulletToken failed: {e}")
         finally:

@@ -2,8 +2,8 @@ import asyncio
 import argparse
 import json
 import os.path
-import subprocess
 import socket
+import sys
 
 from mitmproxy.tools.dump import DumpMaster
 from mitmproxy.options import Options
@@ -91,7 +91,8 @@ def main(conf_file: str = None):
             exit(1)
     if _new_config:
         print("First run, setting up s3s...")
-        subprocess.run(["python", "s3s.py", "-r"])
+        sys.argv = ["s3s.py", "-r"]
+        s3s.main()
     _ip = get_host_ip()
     print(f"start mitmproxy at {_ip}:{_port}\n==================\n\nIf this is your first run:"
           f"\n1. Setup proxy on your phone,\n2. Trust SSL certificate in http://mitm.it ,\n3. Open the NSO app.")
